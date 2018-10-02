@@ -1,3 +1,6 @@
 [submodule "esp32-ADXL355"]
 	path = esp32-ADXL355
 	url = https://github.com/markrad/esp32-ADXL355
+[submodule "esp-azure"]
+	path = esp-azure
+	url = https://github.com/espressif/esp-azure.git
