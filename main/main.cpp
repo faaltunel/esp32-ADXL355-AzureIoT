@@ -144,6 +144,11 @@ static void task_iotsender(void *ignore)
 	uint32_t lastTimestamp = 0;
 	ADXL355::STATUS_VALUES status;
 	
+	// NOTE: The timing of this loop is very sensitive. There is no delay in here
+	//       because in the time it takes to execute one message send and process
+	//       responses the FIFO buffer will fill up. Additional code, espically
+	//       logging to the console will cause the FIFO buffer to overflow if one
+	//       is not careful.
 	while (true)
 	{
 		timestamp = esp_log_timestamp();
@@ -185,7 +190,8 @@ static void task_iotsender(void *ignore)
 			device->DoWork();
 		}
 		
-		//vTaskDelay(10 / portTICK_RATE_MS);
+		// Currently a delay is not required due to the processing time for the loop
+		// vTaskDelay(10 / portTICK_RATE_MS);
 	}
 
 	vTaskDelete(NULL);
@@ -329,14 +335,11 @@ static void appendArray(string &out, long fifoData[32][3], int entryCount, int i
     
     for (int i = 0; i < entryCount; i++)
     {
-		// ss << ADXL355::ValueToGals(fifoData[i][index]);
-        // out += ss.str();
-		
 		gal = ADXL355::ValueToGalsInt(fifoData[i][index]);
 		galInt = gal / 1000;
 		galDec = abs(gal - (galInt * 1000));
 		
-		if (gal < 0)
+		if (gal < 0 && galInt == 0)
 			out += "-";
 		
 		out += itoa(galInt, buffer, 10);
